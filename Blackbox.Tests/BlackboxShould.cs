@@ -41,6 +41,8 @@ namespace Blackbox.Tests
             Blackbox blackbox = new Blackbox(accessToken);
 
             var accounts = await blackbox.GetSubscribers(getAccountsURL);
+
+            accounts.Accounts.Should().NotBeEmpty();
         }
     }
 }

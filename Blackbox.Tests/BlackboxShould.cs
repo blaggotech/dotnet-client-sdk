@@ -38,11 +38,27 @@ namespace Blackbox.Tests
             var accessToken = authResponse.Data.Tokens.AccessToken;
             var getAccountsURL = blackboxBaseURL+"/accounts";
 
-            Blackbox blackbox = new Blackbox(accessToken);
+            Blackbox blackbox = new Blackbox(getAccountsURL, accessToken);
 
-            var accounts = await blackbox.GetSubscribers(getAccountsURL);
+            var accounts = await blackbox.GetSubscribers();
 
             accounts.Accounts.Should().NotBeEmpty();
+        }
+
+        public async Task DeleteSubscriberByID()
+        {
+            const string IDToBeDeleted = "fe7367e0-816c-4283-8655-70cd25bd2c76";
+
+            // login to Blaggo
+            var blaggo = new Blaggo(baseAuthUrl, username, password);
+            AuthResponse authResponse = await blaggo.GetAuthToken();
+
+            var accessToken = authResponse.Data.Tokens.AccessToken;
+            var getAccountsURL = blackboxBaseURL + "/accounts";
+
+            Blackbox blackbox = new Blackbox(getAccountsURL, accessToken);
+
+            await blackbox.DeleteSubscriber(IDToBeDeleted);
         }
     }
 }

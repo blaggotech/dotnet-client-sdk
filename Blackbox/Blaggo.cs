@@ -25,7 +25,7 @@ namespace Blackbox
                 using (var request = new HttpRequestMessage(new HttpMethod("POST"), this.url))
                 {
 
-                    Payload payload = new Payload
+                    LoginPayload payload = new LoginPayload
                     {
                         Username = this.username,
                         Password = this.password

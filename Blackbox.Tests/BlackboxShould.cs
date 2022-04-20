@@ -9,11 +9,11 @@ namespace Blackbox.Tests
     {
 
         // user credentials
-        private string username = "09955621981";
-        private string password = "P@ssw0rd";
-        private string baseAuthUrl = "https://authtest.blaggo.io/auth/";
+        private string username = "09260025401";
+        private string password = "sHr#5K4NtyJw17";
+        private string baseAuthUrl = "https://authstage.blaggo.io/auth/";
 
-        private string blackboxBaseURL = "https://blackboxtest.blaggo.io";
+        private string blackboxBaseURL = "https://blackboxstage.blaggo.io";
 
         // Test Map:
         // 1. Arrange - Given
@@ -31,10 +31,26 @@ namespace Blackbox.Tests
         }
 
         [Fact]
+        public async Task GetProtocolPayloads()
+        {
+            var blaggo = new Blaggo(baseAuthUrl, username, password);
+            AuthResponse authResponse = await blaggo.GetAuthToken();
+
+            var accessToken = authResponse.Data.Tokens.AccessToken;
+            var queryProtocolPayloadsURL = blackboxBaseURL + "/payloads";
+
+            Blackbox blackbox = new Blackbox(queryProtocolPayloadsURL, accessToken);
+
+            var payloads = await blackbox.GetPayloads();
+            payloads.Payloads.Should().NotBeEmpty();
+        }
+
+        [Fact]
         public async Task GetQuerySubscribers()
         {
             var blaggo = new Blaggo(baseAuthUrl, username, password);
             AuthResponse authResponse = await blaggo.GetAuthToken();
+
             var accessToken = authResponse.Data.Tokens.AccessToken;
             var getAccountsURL = blackboxBaseURL+"/accounts";
 
@@ -45,6 +61,7 @@ namespace Blackbox.Tests
             accounts.Accounts.Should().NotBeEmpty();
         }
 
+        [Fact]
         public async Task DeleteSubscriberByID()
         {
             const string IDToBeDeleted = "fe7367e0-816c-4283-8655-70cd25bd2c76";

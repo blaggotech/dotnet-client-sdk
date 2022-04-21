@@ -7,7 +7,6 @@ using Newtonsoft.Json;
 
 namespace Blackbox
 {
-    // Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(myJsonResponse);
     public class Body
     {
         [JsonProperty("body")]

@@ -46,6 +46,22 @@ namespace Blackbox.Tests
         }
 
         [Fact]
+        public async Task GetProtocolPayloadById()
+        {
+            const string protocolId = "f3c92520-7fb9-4f48-87f7-1a540235da0d";
+            var blaggo = new Blaggo(baseAuthUrl, username, password);
+            AuthResponse authResponse = await blaggo.GetAuthToken();
+
+            var accessToken = authResponse.Data.Tokens.AccessToken;
+            var getProtocolPayloadByIdUrl = blackboxBaseURL + "/payloads";
+
+            Blackbox blackbox = new Blackbox(getProtocolPayloadByIdUrl, accessToken);
+            var response = await blackbox.GetPayload(protocolId);
+
+            response?.Payload.Should().NotBeNull();
+        }
+
+        [Fact]
         public async Task GetQuerySubscribers()
         {
             var blaggo = new Blaggo(baseAuthUrl, username, password);
@@ -58,7 +74,7 @@ namespace Blackbox.Tests
 
             var accounts = await blackbox.GetSubscribers();
 
-            accounts.Accounts.Should().NotBeEmpty();
+            accounts?.Accounts.Should().NotBeEmpty();
         }
 
         [Fact]
@@ -75,7 +91,7 @@ namespace Blackbox.Tests
 
             Blackbox blackbox = new Blackbox(getAccountsURL, accessToken);
 
-            await blackbox.DeleteSubscriber(IDToBeDeleted);
+            await blackbox?.DeleteSubscriber(IDToBeDeleted);
         }
     }
 }

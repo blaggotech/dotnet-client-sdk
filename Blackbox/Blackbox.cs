@@ -39,6 +39,27 @@ namespace Blackbox
             }
         }
 
+        public async Task<GetPayloadResponse> GetPayload(string payloadID)
+        {
+            using (var httpClient = new HttpClient())
+            {
+                var getPayloadByIDUrl = Path.Combine(this.uri, payloadID);
+                var uri = new Uri(getPayloadByIDUrl);
+
+                // add Authorization header
+                httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + this.accessToken);
+                httpClient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+                var httpResponse = await httpClient.GetAsync(uri);
+
+                httpResponse.EnsureSuccessStatusCode();
+
+                var contentStream = await httpResponse.Content.ReadAsStringAsync();
+
+                GetPayloadResponse response = JsonConvert.DeserializeObject<GetPayloadResponse>(contentStream);
+                return response;
+            }
+        }
+
         public async Task<SubscriberResponse> GetSubscribers()
         {
             using (var httpClient = new HttpClient())

@@ -1,6 +1,7 @@
 using FluentAssertions;
 using System.Threading.Tasks;
 using System.Web.Http.Results;
+using System;
 using Xunit;
 
 namespace Blackbox.Tests
@@ -9,11 +10,11 @@ namespace Blackbox.Tests
     {
 
         // user credentials
-        private string username = "09260025401";
-        private string password = "sHr#5K4NtyJw17";
-        private string baseAuthUrl = "https://authstage.blaggo.io/auth/";
+        private string? username = Environment.GetEnvironmentVariable("ACCOUNT_USERNAME");
+        private string? password = Environment.GetEnvironmentVariable("ACCOUNT_PASSWORD");
+        private string? baseAuthUrl = Environment.GetEnvironmentVariable("AUTH_BASE_URL");
 
-        private string blackboxBaseURL = "https://blackboxstage.blaggo.io";
+        private string? blackboxBaseURL = Environment.GetEnvironmentVariable("BLACKBOX_BASE_URL");
 
         // Test Map:
         // 1. Arrange - Given
@@ -48,7 +49,7 @@ namespace Blackbox.Tests
         [Fact]
         public async Task GetProtocolPayloadById()
         {
-            const string protocolId = "f3c92520-7fb9-4f48-87f7-1a540235da0d";
+            string? protocolId = Environment.GetEnvironmentVariable("PROTOCOL_ID");
             var blaggo = new Blaggo(baseAuthUrl, username, password);
             AuthResponse authResponse = await blaggo.GetAuthToken();
 
@@ -80,7 +81,7 @@ namespace Blackbox.Tests
         [Fact]
         public async Task DeleteSubscriberByID()
         {
-            const string IDToBeDeleted = "fe7367e0-816c-4283-8655-70cd25bd2c76";
+            string? IDToBeDeleted = Environment.GetEnvironmentVariable("ID_TO_BE_DELETED");
 
             // login to Blaggo
             var blaggo = new Blaggo(baseAuthUrl, username, password);

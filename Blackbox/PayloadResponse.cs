@@ -85,26 +85,9 @@ namespace Blackbox
         public string LastPayment { get; set; }
     }
 
-    public class AuthenticationPayload
-    {
-        [JsonProperty("id")]
-        public string Id { get; set; }
-
-        [JsonProperty("status")]
-        public int Status { get; set; }
-
-        [JsonProperty("body")]
-        public Body Body { get; set; }
-
-        [JsonProperty("created_at")]
-        public DateTime CreatedAt { get; set; }
-    }
-
     public class PayloadResponse
     {
         [JsonProperty("payloads")]
-        public List<AuthenticationPayload> Payloads { get; set; }
+        public List<Payload> Payloads { get; set; }
     }
-
-
 }

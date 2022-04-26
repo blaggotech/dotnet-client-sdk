@@ -18,7 +18,7 @@ namespace Blackbox
             this.password = password;
         }
 
-        public async Task<AuthResponse> GetAuthToken()
+        public async Task<AuthResponse?> GetAuthToken()
         {
             using (var httpClient = new HttpClient())
             {
@@ -41,7 +41,7 @@ namespace Blackbox
                     response.EnsureSuccessStatusCode(); // throws if not 200-299
                     var contentString = response.Content.ReadAsStringAsync();
 
-                    AuthResponse authResponse = JsonConvert.DeserializeObject<AuthResponse>(await contentString);
+                    AuthResponse? authResponse = JsonConvert.DeserializeObject<AuthResponse>(await contentString);
 
                     return authResponse;
                 }

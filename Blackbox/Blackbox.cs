@@ -88,5 +88,20 @@ namespace Blackbox
                 response.EnsureSuccessStatusCode(); // throws if not 200-299
             }
         }
+
+        public async Task DeleteProtocolPayload(HttpClient httpClient, string payloadId)
+        {
+            var subscribersUrl = BLACKBOX_BASE_URL + "/payloads?id=" + payloadId;
+           
+            using (var request = new HttpRequestMessage(HttpMethod.Delete, subscribersUrl))
+            {
+                request.Headers.Add("Authorization", "Bearer " + this.accessToken);
+                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                var response = await httpClient.SendAsync(request);
+
+                response.EnsureSuccessStatusCode(); // throws if not 200-299
+            }
+        }
     }
 }

@@ -4,8 +4,6 @@ using System.Threading.Tasks;
 using System.Web.Http.Results;
 using System;
 using Xunit;
-using Moq;
-using Moq.Protected;
 using System.Net;
 using System.Net.Http;
 
@@ -30,13 +28,55 @@ namespace Blackbox.Tests
         public async Task PrintAuthTokenIfCredentialsAreCorrect()
         {
             // authenticate first on blaggo auth url.
-            var blaggo = new Blaggo(baseAuthUrl, username: username, password: password);
+            var blaggo = new Blaggo(baseAuthUrl, username, password);
 
             HttpClient httpClient = new HttpClient();
             AuthResponse? authResponse = await blaggo.GetAuthToken(httpClient);
 
             _ = (authResponse?.Data.Should().NotBeNull());
             _ = (authResponse?.Data.UserId.Should().NotBeEmpty());
+        }
+
+        [Fact]
+        public async Task GetProtocolPayloads()
+        {
+            // authenticate first on blaggo auth url.
+            var blaggo = new Blaggo(baseAuthUrl, username, password);
+
+            HttpClient httpClient = new HttpClient();
+            AuthResponse? authResponse = await blaggo.GetAuthToken(httpClient);
+
+            _ = (authResponse?.Data.Should().NotBeNull());
+            _ = (authResponse?.Data.UserId.Should().NotBeEmpty());
+
+            var accessToken = authResponse?.Data.Tokens.AccessToken;
+            var blackbox = new Blackbox(accessToken);
+
+            var response = await blackbox.GetPayloads(httpClient);
+
+            _ = (response?.Should().NotBeNull());
+            _ = (response?.Payloads.Should().NotBeEmpty());
+        }
+
+        [Fact]
+        public async Task GetProtocolPayloadById()
+        {
+            var blaggo = new Blaggo(baseAuthUrl, username, password);
+
+            HttpClient httpClient = new HttpClient();
+            AuthResponse? authResponse = await blaggo.GetAuthToken(httpClient);
+
+            _ = (authResponse?.Data.Should().NotBeNull());
+            _ = (authResponse?.Data.UserId.Should().NotBeEmpty());
+
+            var accessToken = authResponse?.Data.Tokens.AccessToken;
+            var blackbox = new Blackbox(accessToken);
+
+            string? protocolId = Environment.GetEnvironmentVariable("PROTOCOL_ID");
+            var response = await blackbox.GetPayload(httpClient, protocolId);
+
+            _ = (response?.Should().NotBeNull());
+            _ = (response?.Payload.Should().NotBeNull());
         }
     }
 }

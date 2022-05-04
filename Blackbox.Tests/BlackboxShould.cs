@@ -78,5 +78,43 @@ namespace Blackbox.Tests
             _ = (response?.Should().NotBeNull());
             _ = (response?.Payload.Should().NotBeNull());
         }
+
+        [Fact]
+        public async Task GetQuerySubscribers()
+        {
+            var blaggo = new Blaggo(baseAuthUrl, username, password);
+
+            HttpClient httpClient = new HttpClient();
+            AuthResponse? authResponse = await blaggo.GetAuthToken(httpClient);
+
+            _ = (authResponse?.Data.Should().NotBeNull());
+            _ = (authResponse?.Data.UserId.Should().NotBeEmpty());
+
+            var accessToken = authResponse?.Data.Tokens.AccessToken;
+            var blackbox = new Blackbox(accessToken);
+
+            var response = await blackbox.GetSubscribers(httpClient);
+
+            _ = (response?.Should().NotBeNull());
+            _ = (response?.Accounts.Should().NotBeEmpty());
+        }
+
+        [Fact]
+        public async Task DeleteSubscriberByID()
+        {
+            var blaggo = new Blaggo(baseAuthUrl, username, password);
+
+            HttpClient httpClient = new HttpClient();
+            AuthResponse? authResponse = await blaggo.GetAuthToken(httpClient);
+
+            _ = (authResponse?.Data.Should().NotBeNull());
+            _ = (authResponse?.Data.UserId.Should().NotBeEmpty());
+
+            var accessToken = authResponse?.Data.Tokens.AccessToken;
+            Blackbox? blackbox = new Blackbox(accessToken);
+
+            string? subscriberId = Environment.GetEnvironmentVariable("ID_TO_BE_DELETED");
+            await blackbox?.DeleteSubscriber(httpClient, subscriberId);
+        }
     }
 }

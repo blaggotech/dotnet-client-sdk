@@ -131,8 +131,8 @@ namespace Blackbox.Tests
             var accessToken = authResponse?.Data.Tokens.AccessToken;
             Blackbox? blackbox = new Blackbox(accessToken);
 
-            string? subscriberId = Environment.GetEnvironmentVariable("ID_TO_BE_DELETED");
-            await blackbox?.DeleteProtocolPayload(httpClient, subscriberId);
+            string? protocolId = Environment.GetEnvironmentVariable("ID_TO_BE_DELETED");
+            await blackbox?.DeleteProtocolPayload(httpClient, protocolId);
         }
     }
 }

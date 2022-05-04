@@ -89,9 +89,9 @@ namespace Blackbox
             }
         }
 
-        public async Task DeleteProtocolPayload(HttpClient httpClient, string payloadId)
+        public async Task DeleteProtocolPayload(HttpClient httpClient, string protocolId)
         {
-            var subscribersUrl = BLACKBOX_BASE_URL + "/payloads?id=" + payloadId;
+            var subscribersUrl = BLACKBOX_BASE_URL + "/payloads?id=" + protocolId;
            
             using (var request = new HttpRequestMessage(HttpMethod.Delete, subscribersUrl))
             {

@@ -73,6 +73,24 @@ namespace Blackbox
             return subscriberResponse;
         }
 
+        public async Task<InboxResponse?> GetInbox(HttpClient httpClient)
+        {
+            var inboxUrl = BLACKBOX_BASE_URL + "/inbox";
+            var uri = new Uri(inboxUrl);
+
+            // add Authorization header
+            httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + this.accessToken);
+            httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            var httpResponse = await httpClient.GetAsync(uri);
+
+            httpResponse.EnsureSuccessStatusCode();
+
+            var contentStream = await httpResponse.Content.ReadAsStringAsync();
+
+            InboxResponse? inboxResponse = JsonConvert.DeserializeObject<InboxResponse>(contentStream);
+            return inboxResponse;
+        }
+
         public async Task DeleteSubscriber(HttpClient httpClient, string subscriberID)
         {
             var subscribersUrl = BLACKBOX_BASE_URL + "/accounts";

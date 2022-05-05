@@ -7,7 +7,6 @@ using Newtonsoft.Json;
 
 namespace Blackbox
 {
-    // Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(myJsonResponse);
     public class Sender
     {
         [JsonProperty("id")]
@@ -122,7 +121,7 @@ namespace Blackbox
         public Transaction? Transaction;
     }
 
-    public class Root
+    public class InboxResponse
     {
         [JsonProperty("messages")]
         public List<Message>? Messages;

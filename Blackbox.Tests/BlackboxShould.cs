@@ -100,6 +100,26 @@ namespace Blackbox.Tests
         }
 
         [Fact]
+        public async Task GetInboxMessages()
+        {
+            var blaggo = new Blaggo(baseAuthUrl, username, password);
+
+            HttpClient httpClient = new HttpClient();
+            AuthResponse? authResponse = await blaggo.GetAuthToken(httpClient);
+
+            _ = (authResponse?.Data.Should().NotBeNull());
+            _ = (authResponse?.Data.UserId.Should().NotBeEmpty());
+
+            var accessToken = authResponse?.Data.Tokens.AccessToken;
+            var blackbox = new Blackbox(accessToken);
+
+            var response = await blackbox.GetInbox(httpClient);
+
+            _ = (response?.Should().NotBeNull());
+            _ = (response?.Messages.Should().NotBeEmpty());
+        }
+
+        [Fact]
         public async Task DeleteSubscriberByID()
         {
             var blaggo = new Blaggo(baseAuthUrl, username, password);

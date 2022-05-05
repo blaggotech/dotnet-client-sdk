@@ -11,90 +11,96 @@ namespace Blackbox
     public class Blackbox
     {
         private string accessToken;
-        private string uri;
+        private static readonly string? BLACKBOX_BASE_URL = Environment.GetEnvironmentVariable("BLACKBOX_BASE_URL");
 
-        public Blackbox(string uri, string accessToken)
+        public Blackbox(string accessToken)
         {
-            this.uri = uri;
             this.accessToken = accessToken;
         }
 
-        public async Task<PayloadResponse> GetPayloads()
+        public async Task<PayloadResponse?> GetPayloads(HttpClient httpClient)
         {
-            using (var httpClient = new HttpClient())
+            var payloadsUrl = BLACKBOX_BASE_URL + "/payloads";
+            var uri = new Uri(payloadsUrl);
+
+            // add Authorization header
+            httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + this.accessToken);
+            httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            var httpResponse = await httpClient.GetAsync(uri);
+
+            httpResponse.EnsureSuccessStatusCode();
+
+            var contentStream = await httpResponse.Content.ReadAsStringAsync();
+
+            PayloadResponse? payloadResponse = JsonConvert.DeserializeObject<PayloadResponse>(contentStream);
+            return payloadResponse;
+        }
+
+        public async Task<GetPayloadResponse?> GetPayload(HttpClient httpClient, string payloadID)
+        {
+            var payloadsUrl = BLACKBOX_BASE_URL + "/payloads";
+            var getPayloadByIDUrl = Path.Combine(payloadsUrl, payloadID);
+            var uri = new Uri(getPayloadByIDUrl);
+
+            // add Authorization header
+            httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + this.accessToken);
+            httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            var httpResponse = await httpClient.GetAsync(uri);
+
+            httpResponse.EnsureSuccessStatusCode();
+
+            var contentStream = await httpResponse.Content.ReadAsStringAsync();
+
+            GetPayloadResponse? response = JsonConvert.DeserializeObject<GetPayloadResponse>(contentStream);
+            return response;
+        }
+
+        public async Task<SubscriberResponse?> GetSubscribers(HttpClient httpClient)
+        {
+            var subscribersUrl = BLACKBOX_BASE_URL + "/accounts";
+            var uri = new Uri(subscribersUrl);
+
+            // add Authorization header
+            httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + this.accessToken);
+            httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            var httpResponse = await httpClient.GetAsync(uri);
+
+            httpResponse.EnsureSuccessStatusCode();
+
+            var contentStream = await httpResponse.Content.ReadAsStringAsync();
+
+            SubscriberResponse? subscriberResponse = JsonConvert.DeserializeObject<SubscriberResponse>(contentStream);
+            return subscriberResponse;
+        }
+
+        public async Task DeleteSubscriber(HttpClient httpClient, string subscriberID)
+        {
+            var subscribersUrl = BLACKBOX_BASE_URL + "/accounts";
+            var deleteSubscriberURL = Path.Combine(subscribersUrl, subscriberID);
+
+            using (var request = new HttpRequestMessage(HttpMethod.Delete, deleteSubscriberURL))
             {
-                var uri = new Uri(this.uri);
+                request.Headers.Add("Authorization", "Bearer " + this.accessToken);
+                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                // add Authorization header
-                httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + this.accessToken);
-                httpClient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-                var httpResponse = await httpClient.GetAsync(uri);
+                var response = await httpClient.SendAsync(request);
 
-                httpResponse.EnsureSuccessStatusCode();
-
-                var contentStream = await httpResponse.Content.ReadAsStringAsync();
-
-                PayloadResponse payloadResponse = JsonConvert.DeserializeObject<PayloadResponse>(contentStream);
-                return payloadResponse;
+                response.EnsureSuccessStatusCode(); // throws if not 200-299
             }
         }
 
-        public async Task<GetPayloadResponse> GetPayload(string payloadID)
+        public async Task DeleteProtocolPayload(HttpClient httpClient, string protocolId)
         {
-            using (var httpClient = new HttpClient())
+            var subscribersUrl = BLACKBOX_BASE_URL + "/payloads?id=" + protocolId;
+           
+            using (var request = new HttpRequestMessage(HttpMethod.Delete, subscribersUrl))
             {
-                var getPayloadByIDUrl = Path.Combine(this.uri, payloadID);
-                var uri = new Uri(getPayloadByIDUrl);
+                request.Headers.Add("Authorization", "Bearer " + this.accessToken);
+                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                // add Authorization header
-                httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + this.accessToken);
-                httpClient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-                var httpResponse = await httpClient.GetAsync(uri);
+                var response = await httpClient.SendAsync(request);
 
-                httpResponse.EnsureSuccessStatusCode();
-
-                var contentStream = await httpResponse.Content.ReadAsStringAsync();
-
-                GetPayloadResponse response = JsonConvert.DeserializeObject<GetPayloadResponse>(contentStream);
-                return response;
-            }
-        }
-
-        public async Task<SubscriberResponse> GetSubscribers()
-        {
-            using (var httpClient = new HttpClient())
-            {
-                var uri = new Uri(this.uri);
-
-                // add Authorization header
-                httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + this.accessToken);
-                httpClient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-                var httpResponse = await httpClient.GetAsync(uri);
-
-                httpResponse.EnsureSuccessStatusCode();
-
-                var contentStream = await httpResponse.Content.ReadAsStringAsync();
-
-                SubscriberResponse subscriberResponse = JsonConvert.DeserializeObject<SubscriberResponse>(contentStream);
-                return subscriberResponse;
-            }
-        }
-
-        public async Task DeleteSubscriber(string subscriberID)
-        {
-            var deleteSubscriberURL = Path.Combine(this.uri, subscriberID);
-
-            using (var httpClient = new HttpClient())
-            {
-                using (var request = new HttpRequestMessage(HttpMethod.Delete, deleteSubscriberURL))
-                {
-                    request.Headers.Add("Authorization", "Bearer " + this.accessToken);
-                    request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-                    var response = await httpClient.SendAsync(request);
-
-                    response.EnsureSuccessStatusCode(); // throws if not 200-299
-                }
+                response.EnsureSuccessStatusCode(); // throws if not 200-299
             }
         }
     }

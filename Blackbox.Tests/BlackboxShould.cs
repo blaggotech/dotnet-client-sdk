@@ -1,8 +1,11 @@
 using FluentAssertions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http.Results;
 using System;
 using Xunit;
+using System.Net;
+using System.Net.Http;
 
 namespace Blackbox.Tests
 {
@@ -26,73 +29,110 @@ namespace Blackbox.Tests
         {
             // authenticate first on blaggo auth url.
             var blaggo = new Blaggo(baseAuthUrl, username, password);
-            AuthResponse authResponse = await blaggo.GetAuthToken();
 
-            authResponse.Data.Tokens.AccessToken.Should().NotBeEmpty();
+            HttpClient httpClient = new HttpClient();
+            AuthResponse? authResponse = await blaggo.GetAuthToken(httpClient);
+
+            _ = (authResponse?.Data.Should().NotBeNull());
+            _ = (authResponse?.Data.UserId.Should().NotBeEmpty());
         }
 
         [Fact]
         public async Task GetProtocolPayloads()
         {
+            // authenticate first on blaggo auth url.
             var blaggo = new Blaggo(baseAuthUrl, username, password);
-            AuthResponse authResponse = await blaggo.GetAuthToken();
 
-            var accessToken = authResponse.Data.Tokens.AccessToken;
-            var queryProtocolPayloadsURL = blackboxBaseURL + "/payloads";
+            HttpClient httpClient = new HttpClient();
+            AuthResponse? authResponse = await blaggo.GetAuthToken(httpClient);
 
-            Blackbox blackbox = new Blackbox(queryProtocolPayloadsURL, accessToken);
+            _ = (authResponse?.Data.Should().NotBeNull());
+            _ = (authResponse?.Data.UserId.Should().NotBeEmpty());
 
-            var payloads = await blackbox.GetPayloads();
-            payloads.Payloads.Should().NotBeEmpty();
+            var accessToken = authResponse?.Data.Tokens.AccessToken;
+            var blackbox = new Blackbox(accessToken);
+
+            var response = await blackbox.GetPayloads(httpClient);
+
+            _ = (response?.Should().NotBeNull());
+            _ = (response?.Payloads.Should().NotBeEmpty());
         }
 
         [Fact]
         public async Task GetProtocolPayloadById()
         {
-            string? protocolId = Environment.GetEnvironmentVariable("PROTOCOL_ID");
             var blaggo = new Blaggo(baseAuthUrl, username, password);
-            AuthResponse authResponse = await blaggo.GetAuthToken();
 
-            var accessToken = authResponse.Data.Tokens.AccessToken;
-            var getProtocolPayloadByIdUrl = blackboxBaseURL + "/payloads";
+            HttpClient httpClient = new HttpClient();
+            AuthResponse? authResponse = await blaggo.GetAuthToken(httpClient);
 
-            Blackbox blackbox = new Blackbox(getProtocolPayloadByIdUrl, accessToken);
-            var response = await blackbox.GetPayload(protocolId);
+            _ = (authResponse?.Data.Should().NotBeNull());
+            _ = (authResponse?.Data.UserId.Should().NotBeEmpty());
 
-            response?.Payload.Should().NotBeNull();
+            var accessToken = authResponse?.Data.Tokens.AccessToken;
+            var blackbox = new Blackbox(accessToken);
+
+            string? protocolId = Environment.GetEnvironmentVariable("PROTOCOL_ID");
+            var response = await blackbox.GetPayload(httpClient, protocolId);
+
+            _ = (response?.Should().NotBeNull());
+            _ = (response?.Payload.Should().NotBeNull());
         }
 
         [Fact]
         public async Task GetQuerySubscribers()
         {
             var blaggo = new Blaggo(baseAuthUrl, username, password);
-            AuthResponse authResponse = await blaggo.GetAuthToken();
 
-            var accessToken = authResponse.Data.Tokens.AccessToken;
-            var getAccountsURL = blackboxBaseURL+"/accounts";
+            HttpClient httpClient = new HttpClient();
+            AuthResponse? authResponse = await blaggo.GetAuthToken(httpClient);
 
-            Blackbox blackbox = new Blackbox(getAccountsURL, accessToken);
+            _ = (authResponse?.Data.Should().NotBeNull());
+            _ = (authResponse?.Data.UserId.Should().NotBeEmpty());
 
-            var accounts = await blackbox.GetSubscribers();
+            var accessToken = authResponse?.Data.Tokens.AccessToken;
+            var blackbox = new Blackbox(accessToken);
 
-            accounts?.Accounts.Should().NotBeEmpty();
+            var response = await blackbox.GetSubscribers(httpClient);
+
+            _ = (response?.Should().NotBeNull());
+            _ = (response?.Accounts.Should().NotBeEmpty());
         }
 
         [Fact]
         public async Task DeleteSubscriberByID()
         {
-            string? IDToBeDeleted = Environment.GetEnvironmentVariable("ID_TO_BE_DELETED");
-
-            // login to Blaggo
             var blaggo = new Blaggo(baseAuthUrl, username, password);
-            AuthResponse authResponse = await blaggo.GetAuthToken();
 
-            var accessToken = authResponse.Data.Tokens.AccessToken;
-            var getAccountsURL = blackboxBaseURL + "/accounts";
+            HttpClient httpClient = new HttpClient();
+            AuthResponse? authResponse = await blaggo.GetAuthToken(httpClient);
 
-            Blackbox blackbox = new Blackbox(getAccountsURL, accessToken);
+            _ = (authResponse?.Data.Should().NotBeNull());
+            _ = (authResponse?.Data.UserId.Should().NotBeEmpty());
 
-            await blackbox?.DeleteSubscriber(IDToBeDeleted);
+            var accessToken = authResponse?.Data.Tokens.AccessToken;
+            Blackbox? blackbox = new Blackbox(accessToken);
+
+            string? subscriberId = Environment.GetEnvironmentVariable("ID_TO_BE_DELETED");
+            await blackbox?.DeleteSubscriber(httpClient, subscriberId);
+        }
+
+        [Fact]
+        public async Task DeleteProtocolPayload()
+        {
+            var blaggo = new Blaggo(baseAuthUrl, username, password);
+
+            HttpClient httpClient = new HttpClient();
+            AuthResponse? authResponse = await blaggo.GetAuthToken(httpClient);
+
+            _ = (authResponse?.Data.Should().NotBeNull());
+            _ = (authResponse?.Data.UserId.Should().NotBeEmpty());
+
+            var accessToken = authResponse?.Data.Tokens.AccessToken;
+            Blackbox? blackbox = new Blackbox(accessToken);
+
+            string? protocolId = Environment.GetEnvironmentVariable("ID_TO_BE_DELETED");
+            await blackbox?.DeleteProtocolPayload(httpClient, protocolId);
         }
     }
 }

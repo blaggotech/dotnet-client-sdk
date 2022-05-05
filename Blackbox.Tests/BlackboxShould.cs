@@ -120,6 +120,24 @@ namespace Blackbox.Tests
         }
 
         [Fact]
+        public async Task DeleteInboxMessageById()
+        {
+            var blaggo = new Blaggo(baseAuthUrl, username, password);
+
+            HttpClient httpClient = new HttpClient();
+            AuthResponse? authResponse = await blaggo.GetAuthToken(httpClient);
+
+            _ = (authResponse?.Data.Should().NotBeNull());
+            _ = (authResponse?.Data.UserId.Should().NotBeEmpty());
+
+            var accessToken = authResponse?.Data.Tokens.AccessToken;
+            Blackbox? blackbox = new Blackbox(accessToken);
+
+            string? protocolId = Environment.GetEnvironmentVariable("ID_TO_BE_DELETED");
+            await blackbox?.DeleteInboxById(httpClient, protocolId);
+        }
+
+        [Fact]
         public async Task DeleteSubscriberByID()
         {
             var blaggo = new Blaggo(baseAuthUrl, username, password);

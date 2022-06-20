@@ -10,6 +10,7 @@ namespace Blackbox
         private string url;
         private string username;
         private string password;
+        // private readonly HttpClient httpClient = new HttpClient();
 
         public Blaggo(string baseUrl, string username, string password)
         {
@@ -18,34 +19,23 @@ namespace Blackbox
             this.password = password;
         }
 
-        public async Task<AuthResponse> GetAuthToken()
+        public async Task<AuthResponse?> GetAuthToken(HttpClient httpClient)
         {
-            using (var httpClient = new HttpClient())
+            LoginPayload payload = new LoginPayload
             {
-                using (var request = new HttpRequestMessage(new HttpMethod("POST"), this.url))
-                {
+                Username = this.username,
+                Password = this.password
+            };
 
-                    Payload payload = new Payload
-                    {
-                        Username = this.username,
-                        Password = this.password
-                    };
+            var json = JsonConvert.SerializeObject(payload, Formatting.Indented);
+            var response = await httpClient.PostAsync(this.url, new StringContent(json, Encoding.UTF8, "application/json"));
 
-                    var json = JsonConvert.SerializeObject(payload, Formatting.Indented);
+            response.EnsureSuccessStatusCode(); // throws if not 200-299
+            var contentString = response.Content.ReadAsStringAsync();
 
-                    request.Content = new StringContent(json);
-                    request.Content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json");
+            AuthResponse? authResponse = JsonConvert.DeserializeObject<AuthResponse>(await contentString);
 
-                    var response = await httpClient.SendAsync(request);
-
-                    response.EnsureSuccessStatusCode(); // throws if not 200-299
-                    var contentString = response.Content.ReadAsStringAsync();
-
-                    AuthResponse authResponse = JsonConvert.DeserializeObject<AuthResponse>(await contentString);
-
-                    return authResponse;
-                }
-            }
+            return authResponse;
         }
     }
 }

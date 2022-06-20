@@ -99,7 +99,7 @@ namespace Blackbox.Tests
         }
 
         [Fact]
-        public async Task GetQuerySubscribers()
+        public async Task QuerySubscribers()
         {
             var blaggo = new Blaggo(baseAuthUrl, username, password);
 

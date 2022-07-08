@@ -7,7 +7,7 @@ using Xunit;
 using System.Net;
 using System.Net.Http;
 
-namespace Blackbox.Tests
+namespace BlaggoBlackbox.Tests
 {
     public class BlackboxShould
     {
@@ -35,6 +35,34 @@ namespace Blackbox.Tests
 
             _ = (authResponse?.Data.Should().NotBeNull());
             _ = (authResponse?.Data.UserId.Should().NotBeEmpty());
+        }
+
+        [Fact]
+        public async Task CreatePayloads()
+        {
+            // authenticate first on blaggo auth url.
+            var blaggo = new Blaggo(baseAuthUrl, username, password);
+
+            HttpClient httpClient = new HttpClient();
+            AuthResponse? authResponse = await blaggo.GetAuthToken(httpClient);
+
+            _ = (authResponse?.Data.Should().NotBeNull());
+            _ = (authResponse?.Data.UserId.Should().NotBeEmpty());
+
+            var accessToken = authResponse?.Data.Tokens.AccessToken;
+            var blackbox = new Blackbox(accessToken);
+
+            AddProtocolPayloadParameters payload = new AddProtocolPayloadParameters
+            {
+                AggregatorId = "11111",
+                Alias = "test alias",
+                CustomerCode = "Hello",
+                ProfileId = "11111"
+            };
+
+            var response = await blackbox.CreatePayloads(httpClient, payload);
+
+            _ = (response?.Should().NotBeNull());
         }
 
         [Fact]

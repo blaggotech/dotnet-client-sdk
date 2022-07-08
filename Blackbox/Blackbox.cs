@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Net.Http.Headers;
 using Newtonsoft.Json;
 
-namespace Blackbox
+namespace BlaggoBlackbox
 {
     public class Blackbox
     {
@@ -34,6 +34,22 @@ namespace Blackbox
 
             PayloadResponse? payloadResponse = JsonConvert.DeserializeObject<PayloadResponse>(contentStream);
             return payloadResponse;
+        }
+
+        public async Task<string?> CreatePayloads(HttpClient httpClient, AddProtocolPayloadParameters payload)
+        {
+            var payloadsUrl = BLACKBOX_BASE_URL + "/payloads";
+            var uri = new Uri(payloadsUrl);
+
+            var json = JsonConvert.SerializeObject(payload, Formatting.Indented);
+
+            httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + this.accessToken);
+            var response = await httpClient.PostAsync(uri, new StringContent(json, Encoding.UTF8, "application/json"));
+
+            response.EnsureSuccessStatusCode(); // throws if not 200-299
+            var contentString = await response.Content.ReadAsStringAsync();
+
+            return contentString;
         }
 
         public async Task<GetPayloadResponse?> GetPayload(HttpClient httpClient, string payloadID)

@@ -13,43 +13,63 @@ namespace BlaggoBlackbox.Tests
     {
 
         // user credentials
-        private string? username = Environment.GetEnvironmentVariable("ACCOUNT_USERNAME");
-        private string? password = Environment.GetEnvironmentVariable("ACCOUNT_PASSWORD");
-        private string? baseAuthUrl = Environment.GetEnvironmentVariable("AUTH_BASE_URL");
+        public string? username = Environment.GetEnvironmentVariable("ACCOUNT_USERNAME");
+        public string? password = Environment.GetEnvironmentVariable("ACCOUNT_PASSWORD");
+        public string? baseAuthUrl = Environment.GetEnvironmentVariable("AUTH_BASE_URL");
 
-        private string? blackboxBaseURL = Environment.GetEnvironmentVariable("BLACKBOX_BASE_URL");
+        public string? blackboxBaseURL = Environment.GetEnvironmentVariable("BLACKBOX_BASE_URL");
 
-        // Test Map:
-        // 1. Arrange - Given
-        // 2. Act - When
-        // 3. Assert - Then
+        private HttpClient _httpClient;
+        private Credentials _credentials;
+        private Options _options;
+
+        public BlackboxShould()
+        {
+            _httpClient = new HttpClient();
+            _credentials = new Credentials()
+            {
+                Username = username,
+                Password = password
+            };
+            _options = new Options()
+            {
+                AuthURL = baseAuthUrl,
+                Credentials = _credentials,
+                AuthenticatorFn = null,
+                HttpClient = _httpClient
+            };
+        }
 
         [Fact]
         public async Task PrintAuthTokenIfCredentialsAreCorrect()
         {
-            HttpClient httpClient = new HttpClient();
-            Credentials creds = new Credentials
-            {
-                Username = username,
-                Password = password,
-            };
+            // 1. Arrange - Given
+            var blaggo = new Blaggo(_options);
 
-            Options options = new Options
-            {
-                AuthURL = baseAuthUrl,
-                Credentials = creds,
-                AuthenticatorFn = null,
-                HttpClient = httpClient
-            };
+            // 2. Act - When
+            AuthResponse? authResponse = await blaggo.AuthFn(_options.AuthURL, _credentials);
 
-            // authenticate first on blaggo auth url.
-            var blaggo = new Blaggo(options);
-
-            
-            AuthResponse? authResponse = await blaggo.AuthFn(options.AuthURL, creds);
-
+            // 3. Assert - Then
             _ = (authResponse?.Data.Should().NotBeNull());
             _ = (authResponse?.Data.UserId.Should().NotBeEmpty());
+        }
+
+        [Fact]
+        public async Task GetProtocolPayloads()
+        {
+            var blaggo = new Blaggo(_options);
+
+            var authResponse = await blaggo.AuthFn(_options.AuthURL, _credentials);
+
+            var accessToken = authResponse.Data.Tokens.AccessToken;
+
+            _ = (accessToken)?.Should().NotBeEmpty();
+
+            var blackbox = new Blackbox(accessToken);
+            var response = await blackbox.GetPayloads(_httpClient);
+
+            _ = (response?.Should().NotBeNull());
+            _ = (response?.Payloads.Should().NotBeEmpty());
         }
     }
 }

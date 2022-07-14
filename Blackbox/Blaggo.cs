@@ -6,36 +6,40 @@ namespace BlaggoBlackbox
 {
     public class Blaggo
     {
+        private Options options;
 
-        private string url;
-        private string username;
-        private string password;
-        // private readonly HttpClient httpClient = new HttpClient();
-
-        public Blaggo(string baseUrl, string username, string password)
+        public Blaggo(Options options)
         {
-            this.url = baseUrl;
-            this.username = username;
-            this.password = password;
+            var authenticator = options.AuthenticatorFn;
+            if (options.HttpClient == null)
+            {
+                options.HttpClient = new HttpClient();
+            }
+
+            if (authenticator == null)
+            {
+                options.AuthenticatorFn = AuthFn;
+            }
+            this.options = options;
         }
 
-        public async Task<AuthResponse?> GetAuthToken(HttpClient httpClient)
+        public async Task<AuthResponse> AuthFn(string url, Credentials creds)
         {
             LoginPayload payload = new LoginPayload
             {
-                Username = this.username,
-                Password = this.password
+                Username = creds.Username,
+                Password = creds.Password,
             };
 
-            var json = JsonConvert.SerializeObject(payload, Formatting.Indented);
-            var response = await httpClient.PostAsync(this.url, new StringContent(json, Encoding.UTF8, "application/json"));
+            const string contentType = "application/json";
 
-            response.EnsureSuccessStatusCode(); // throws if not 200-299
+            var json = JsonConvert.SerializeObject(payload, Formatting.Indented);
+            var response = await this.options.HttpClient.PostAsync(url, new StringContent(json, Encoding.UTF8, contentType));
+
+            response.EnsureSuccessStatusCode(); // throws if not 200-299.
             var contentString = response.Content.ReadAsStringAsync();
 
-            AuthResponse? authResponse = JsonConvert.DeserializeObject<AuthResponse>(await contentString);
-
-            return authResponse;
+            return JsonConvert.DeserializeObject<AuthResponse>(await contentString);
         }
     }
 }

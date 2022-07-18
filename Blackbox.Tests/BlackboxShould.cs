@@ -63,5 +63,17 @@ namespace BlaggoBlackbox.Tests
             _ = (response?.Should().NotBeNull());
             _ = (response?.Payloads.Should().NotBeEmpty());
         }
+
+        [Fact]
+        public async Task GetProtocolPayloadById()
+        {
+            string? protocolId = Environment.GetEnvironmentVariable("PROTOCOL_ID");
+
+            var blackbox = new Blackbox(_options);
+            var response = await blackbox.GetPayload(protocolId);
+
+            _ = (response?.Should().NotBeNull());
+            _ = (response?.Payload.Should().NotBeNull());
+        }
     }
 }

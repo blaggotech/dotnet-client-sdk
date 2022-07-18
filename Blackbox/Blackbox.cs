@@ -55,8 +55,9 @@ namespace BlaggoBlackbox
             var payloadsUrl = BLACKBOX_BASE_URL + "/payloads";
             var uri = new Uri(payloadsUrl);
 
+            var httpClient = this.options.HttpClient ?? new HttpClient();
+
             // add Authorization header
-            var httpClient = this.options.HttpClient;
             httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + accessToken);
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             var httpResponse = await httpClient.GetAsync(uri);
@@ -67,6 +68,29 @@ namespace BlaggoBlackbox
 
             PayloadResponse? payloadResponse = JsonConvert.DeserializeObject<PayloadResponse>(contentStream);
             return payloadResponse;
+        }
+
+        public async Task<GetPayloadResponse?> GetPayload(string payloadId)
+        {
+            var authResponse = await this.options.AuthenticatorFn(this.options.AuthURL, this.options.Credentials);
+            var accessToken = authResponse.Data.Tokens.AccessToken;
+
+            var payloadsUrl = BLACKBOX_BASE_URL + "/payloads";
+            var getPayloadByIDUrl = Path.Combine(payloadsUrl, payloadId);
+            var uri = new Uri(getPayloadByIDUrl);
+
+            var httpClient = this.options.HttpClient ?? new HttpClient();
+
+            httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + accessToken);
+            httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            var httpResponse = await httpClient.GetAsync(uri);
+
+            httpResponse.EnsureSuccessStatusCode();
+
+            var contentStream = await httpResponse.Content.ReadAsStringAsync();
+
+            GetPayloadResponse? response = JsonConvert.DeserializeObject<GetPayloadResponse>(contentStream);
+            return response;
         }
     }
 }

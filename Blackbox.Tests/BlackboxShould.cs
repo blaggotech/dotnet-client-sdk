@@ -85,5 +85,15 @@ namespace BlaggoBlackbox.Tests
             _ = (response?.Should().NotBeNull());
             _ = (response?.Accounts.Should().NotBeEmpty());
         }
+
+        [Fact]
+        public async Task GetInboxMessages()
+        {
+            var blackbox = new Blackbox(_options);
+            var response = await blackbox.GetInbox();
+
+            _ = (response?.Should().NotBeNull());
+            _ = (response?.Messages.Should().NotBeEmpty());
+        }
     }
 }

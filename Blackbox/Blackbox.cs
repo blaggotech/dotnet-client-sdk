@@ -92,5 +92,26 @@ namespace BlaggoBlackbox
             GetPayloadResponse? response = JsonConvert.DeserializeObject<GetPayloadResponse>(contentStream);
             return response;
         }
+
+        public async Task<SubscriberResponse> GetSubscribers()
+        {
+            var authResponse = await this.options.AuthenticatorFn(this.options.AuthURL, this.options.Credentials);
+            var accessToken = authResponse.Data.Tokens.AccessToken;
+
+            var subscribersUrl = BLACKBOX_BASE_URL + "/accounts";
+            var uri = new Uri(subscribersUrl);
+
+            var httpClient = this.options.HttpClient ?? new HttpClient();
+            httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + accessToken);
+            httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            var httpResponse = await httpClient.GetAsync(uri);
+
+            httpResponse.EnsureSuccessStatusCode();
+
+            var contentStream = await httpResponse.Content.ReadAsStringAsync();
+
+            SubscriberResponse? subscriberResponse = JsonConvert.DeserializeObject<SubscriberResponse>(contentStream);
+            return subscriberResponse;
+        }
     }
 }

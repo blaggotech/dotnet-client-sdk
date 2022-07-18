@@ -10,21 +10,54 @@ namespace BlaggoBlackbox
 {
     public class Blackbox
     {
-        private string accessToken;
         private static readonly string? BLACKBOX_BASE_URL = Environment.GetEnvironmentVariable("BLACKBOX_BASE_URL");
+        private Options options;
 
-        public Blackbox(string accessToken)
+        public Blackbox(Options options)
         {
-            this.accessToken = accessToken;
+            var authenticator = options.AuthenticatorFn;
+            if (options.HttpClient == null)
+            {
+                options.HttpClient = new HttpClient();
+            }
+
+            if (authenticator == null)
+            {
+                options.AuthenticatorFn = Authenticate;
+            }
+            this.options = options;
         }
 
-        public async Task<PayloadResponse?> GetPayloads(HttpClient httpClient)
+        public async Task<AuthResponse> Authenticate(string url, Credentials creds)
         {
+            LoginPayload payload = new LoginPayload
+            {
+                Username = creds.Username,
+                Password = creds.Password,
+            };
+
+            const string contentType = "application/json";
+
+            var json = JsonConvert.SerializeObject(payload, Formatting.Indented);
+            var response = await this.options.HttpClient.PostAsync(url, new StringContent(json, Encoding.UTF8, contentType));
+
+            response.EnsureSuccessStatusCode(); // throws if not 200-299.
+            var contentString = response.Content.ReadAsStringAsync();
+
+            return JsonConvert.DeserializeObject<AuthResponse>(await contentString);
+        }
+
+        public async Task<PayloadResponse?> GetPayloads()
+        {
+            var authResponse = await this.options.AuthenticatorFn(this.options.AuthURL, this.options.Credentials);
+            var accessToken = authResponse.Data.Tokens.AccessToken;
+
             var payloadsUrl = BLACKBOX_BASE_URL + "/payloads";
             var uri = new Uri(payloadsUrl);
 
             // add Authorization header
-            httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + this.accessToken);
+            var httpClient = this.options.HttpClient;
+            httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + accessToken);
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             var httpResponse = await httpClient.GetAsync(uri);
 
@@ -34,123 +67,6 @@ namespace BlaggoBlackbox
 
             PayloadResponse? payloadResponse = JsonConvert.DeserializeObject<PayloadResponse>(contentStream);
             return payloadResponse;
-        }
-
-        public async Task<string?> CreatePayloads(HttpClient httpClient, AddProtocolPayloadParameters payload)
-        {
-            var payloadsUrl = BLACKBOX_BASE_URL + "/payloads";
-            var uri = new Uri(payloadsUrl);
-
-            var json = JsonConvert.SerializeObject(payload, Formatting.Indented);
-
-            httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + this.accessToken);
-            var response = await httpClient.PostAsync(uri, new StringContent(json, Encoding.UTF8, "application/json"));
-
-            response.EnsureSuccessStatusCode(); // throws if not 200-299
-            var contentString = await response.Content.ReadAsStringAsync();
-
-            return contentString;
-        }
-
-        public async Task<GetPayloadResponse?> GetPayload(HttpClient httpClient, string payloadID)
-        {
-            var payloadsUrl = BLACKBOX_BASE_URL + "/payloads";
-            var getPayloadByIDUrl = Path.Combine(payloadsUrl, payloadID);
-            var uri = new Uri(getPayloadByIDUrl);
-
-            // add Authorization header
-            httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + this.accessToken);
-            httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            var httpResponse = await httpClient.GetAsync(uri);
-
-            httpResponse.EnsureSuccessStatusCode();
-
-            var contentStream = await httpResponse.Content.ReadAsStringAsync();
-
-            GetPayloadResponse? response = JsonConvert.DeserializeObject<GetPayloadResponse>(contentStream);
-            return response;
-        }
-
-        public async Task<SubscriberResponse?> GetSubscribers(HttpClient httpClient)
-        {
-            var subscribersUrl = BLACKBOX_BASE_URL + "/accounts";
-            var uri = new Uri(subscribersUrl);
-
-            // add Authorization header
-            httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + this.accessToken);
-            httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            var httpResponse = await httpClient.GetAsync(uri);
-
-            httpResponse.EnsureSuccessStatusCode();
-
-            var contentStream = await httpResponse.Content.ReadAsStringAsync();
-
-            SubscriberResponse? subscriberResponse = JsonConvert.DeserializeObject<SubscriberResponse>(contentStream);
-            return subscriberResponse;
-        }
-
-        public async Task<InboxResponse?> GetInbox(HttpClient httpClient)
-        {
-            var inboxUrl = BLACKBOX_BASE_URL + "/inbox";
-            var uri = new Uri(inboxUrl);
-
-            // add Authorization header
-            httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + this.accessToken);
-            httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            var httpResponse = await httpClient.GetAsync(uri);
-
-            httpResponse.EnsureSuccessStatusCode();
-
-            var contentStream = await httpResponse.Content.ReadAsStringAsync();
-
-            InboxResponse? inboxResponse = JsonConvert.DeserializeObject<InboxResponse>(contentStream);
-            return inboxResponse;
-        }
-
-        public async Task DeleteInboxById(HttpClient httpClient, string inboxId)
-        {
-            var subscribersUrl = BLACKBOX_BASE_URL + "/inbox?id=" + inboxId;
-
-            using (var request = new HttpRequestMessage(HttpMethod.Delete, subscribersUrl))
-            {
-                request.Headers.Add("Authorization", "Bearer " + this.accessToken);
-                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-                var response = await httpClient.SendAsync(request);
-
-                response.EnsureSuccessStatusCode(); // throws if not 200-299
-            }
-        }
-
-        public async Task DeleteSubscriber(HttpClient httpClient, string subscriberID)
-        {
-            var subscribersUrl = BLACKBOX_BASE_URL + "/accounts";
-            var deleteSubscriberURL = Path.Combine(subscribersUrl, subscriberID);
-
-            using (var request = new HttpRequestMessage(HttpMethod.Delete, deleteSubscriberURL))
-            {
-                request.Headers.Add("Authorization", "Bearer " + this.accessToken);
-                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-                var response = await httpClient.SendAsync(request);
-
-                response.EnsureSuccessStatusCode(); // throws if not 200-299
-            }
-        }
-
-        public async Task DeleteProtocolPayload(HttpClient httpClient, string protocolId)
-        {
-            var subscribersUrl = BLACKBOX_BASE_URL + "/payloads?id=" + protocolId;
-           
-            using (var request = new HttpRequestMessage(HttpMethod.Delete, subscribersUrl))
-            {
-                request.Headers.Add("Authorization", "Bearer " + this.accessToken);
-                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-                var response = await httpClient.SendAsync(request);
-
-                response.EnsureSuccessStatusCode(); // throws if not 200-299
-            }
         }
     }
 }

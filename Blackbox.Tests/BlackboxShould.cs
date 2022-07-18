@@ -57,16 +57,8 @@ namespace BlaggoBlackbox.Tests
         [Fact]
         public async Task GetProtocolPayloads()
         {
-            var blaggo = new Blaggo(_options);
-
-            var authResponse = await blaggo.AuthFn(_options.AuthURL, _credentials);
-
-            var accessToken = authResponse.Data.Tokens.AccessToken;
-
-            _ = (accessToken)?.Should().NotBeEmpty();
-
-            var blackbox = new Blackbox(accessToken);
-            var response = await blackbox.GetPayloads(_httpClient);
+            var blackbox = new Blackbox(_options);
+            var response = await blackbox.GetPayloads();
 
             _ = (response?.Should().NotBeNull());
             _ = (response?.Payloads.Should().NotBeEmpty());

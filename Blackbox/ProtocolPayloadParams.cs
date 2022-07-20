@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BlaggoBlackbox
+namespace Blaggo.Blackbox
 {
     public class AddProtocolPayloadParameters
     {

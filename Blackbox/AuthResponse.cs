@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace BlaggoBlackbox
+namespace Blaggo.Blackbox
 {
     public class AuthResponse
     {

@@ -7,7 +7,7 @@ using Xunit;
 using System.Net;
 using System.Net.Http;
 
-namespace BlaggoBlackbox.Tests
+namespace Blaggo.Blackbox.Tests
 {
     public class BlackboxShould
     {

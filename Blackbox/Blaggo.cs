@@ -2,7 +2,7 @@
 using System.Net.Http.Headers;
 using Newtonsoft.Json;
 
-namespace BlaggoBlackbox
+namespace Blaggo.Blackbox
 {
     public class Blaggo
     {

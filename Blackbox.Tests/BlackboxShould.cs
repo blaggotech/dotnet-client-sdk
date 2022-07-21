@@ -77,6 +77,20 @@ namespace Blaggo.Blackbox.Tests
         }
 
         [Fact]
+        public async Task QueryProtocolPayloads()
+        {
+            PayloadOptions options = new PayloadOptions
+            {
+
+            };
+
+            var blackbox = new Blackbox(_options);
+            var response = await blackbox.QueryProtocolPayloads(options);
+
+            _ = (response?.Should().NotBeNull());
+        }
+
+        [Fact]
         public async Task GetSubscribers()
         {
             var blackbox = new Blackbox(_options);

@@ -1,9 +1,16 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Description>SDK for Blaggo endpoints.</Description>
+    <RepositoryUrl>https://github.com/blaggotech/dotnet-client-sdk.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>sdk,c#</PackageTags>
+    <PackageId>BlaggoBlackbox</PackageId>
+    <Version>1.0.2</Version>
   </PropertyGroup>
 
   <ItemGroup>

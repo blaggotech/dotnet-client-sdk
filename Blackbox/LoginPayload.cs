@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Blackbox
+namespace Blaggo.Blackbox
 {
     public class LoginPayload
     {

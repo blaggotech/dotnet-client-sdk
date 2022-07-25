@@ -1,7 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json;
 
-namespace Blackbox
+namespace Blaggo.Blackbox
 {
     // SubscriberResponse myDeserializedClass = JsonConvert.DeserializeObject<SubscriberResponse>(myJsonResponse);
     public class Status

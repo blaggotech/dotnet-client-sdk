@@ -10,7 +10,7 @@
     <RepositoryType>git</RepositoryType>
     <PackageTags>sdk,c#</PackageTags>
     <PackageId>BlaggoBlackbox</PackageId>
-    <Version>1.0.2</Version>
+    <Version>1.1.2</Version>
   </PropertyGroup>
 
   <ItemGroup>

@@ -6,11 +6,11 @@
 **API Documentation**
 - Staging Environment
 
-  https://blackboxstage.blaggo.io/docs
+  https://blackboxstage.blaggo.io/blackbox/docs
 
 - Production Environment
 
-  https://blackbox.blaggo.io/docs
+  https://blackbox.blaggo.io/blackbox/docs
 
 Example usage:
 
